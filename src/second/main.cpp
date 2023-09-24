@@ -5,7 +5,8 @@
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
-void render(GLFWwindow* window);
+void render(GLFWwindow* window, int* shader);
+int* generateShader(GLFWwindow* window);
 
 int main() {
 
@@ -57,6 +58,8 @@ int main() {
 	//注册窗口变化回调
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
+	int* shaders = generateShader(window);
+
 
 	//循环
 	//检查GLFW是否被要求退出
@@ -66,7 +69,7 @@ int main() {
 		processInput(window);
 
 		/*渲染*/
-		render(window);
+		render(window, shaders);
 
 		/*
 		函数会交换颜色缓冲（它是一个储存着GLFW窗口每一个像素颜色值的大缓冲），它在这一迭代中被用来绘制，并且将会作为输出显示在屏幕上。
@@ -97,17 +100,17 @@ void processInput(GLFWwindow* window) {
 }
 
 
-int generateShader(GLFWwindow* window) {
+int* generateShader(GLFWwindow* window) {
 	//顶点着色器转换内容,
 	//将传入的第一个数据申明为一个vec3类型的aPos变量
 	//将apos变量转换为opengl需要的坐标vec4
 	const char* vertexShaderSource = R"(
 		#version 330 core
-		#定义传入的第一个值为vec3类型的aPos字段
+		//定义传入的第一个值为vec3类型的aPos字段
 		layout (location = 0) in vec3 aPos;
 		void main()
 		{
-			#传出gl_Position位置
+			//传出gl_Position位置
 			gl_Position = vec4(aPos.x,aPos.y,aPos.z,1.0);
 		}
 	)";
@@ -162,7 +165,8 @@ int generateShader(GLFWwindow* window) {
 
 	//将上面两个着色器合并成一个着色器程序
 	//创建一个program
-	unsigned int shaderProgram = glCreateProgram();
+	unsigned int shaderProgram;
+	shaderProgram = glCreateProgram();
 	//附加顶点着色器
 	glAttachShader(shaderProgram, vertexShader);
 	//附加片段着色器
@@ -191,6 +195,12 @@ int generateShader(GLFWwindow* window) {
 
 
 
+	unsigned int vao;
+	//创建一个顶点缓冲数组-->VAO
+	glGenVertexArrays(1, &vao);
+
+	//绑定vao
+	glBindVertexArray(vao);
 
 	//三角形顶点坐标
 	float vertices[] = {
@@ -200,7 +210,7 @@ int generateShader(GLFWwindow* window) {
 	};
 
 	GLuint vbo;
-	//创建一个顶点缓冲对象
+	//创建一个顶点缓冲对象-->VBO
 	glGenBuffers(1, &vbo);
 
 	//绑定vbo到opengl,
@@ -214,14 +224,34 @@ int generateShader(GLFWwindow* window) {
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	//其中顶点着色器属性
 	glEnableVertexAttribArray(0);
+
+	//解绑VBO
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	//解绑VAO
+	glBindVertexArray(0);
+
+	int* result;
+	result = (int*)malloc(sizeof(unsigned int) * 2);
+	if (result) {
+		result[0] = shaderProgram;
+		result[1] = vao;
+	}
+	return result;
 }
 
 
 // 渲染指令
-void render(GLFWwindow* window) {
+void render(GLFWwindow* window, int* shader) {
 	//清空屏幕所用的颜色,设置默认颜色
 	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-
 	//清除颜色缓冲
 	glClear(GL_COLOR_BUFFER_BIT);
+
+	int shaderProgram = shader[0];
+	int vao = shader[1];
+
+	glUseProgram(shaderProgram);
+	glBindVertexArray(vao);
+	glDrawArrays(GL_TRIANGLES, 0, 3);
 }
