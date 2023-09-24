@@ -140,6 +140,7 @@ int* generateShader(GLFWwindow* window) {
 
 	const char* frameShaderSource = R"(
 		#version 330 core
+		out vec4 FragColor;
 		void main(){
 			FragColor = vec4(1.0f,0.5f,0.2f,1.0f);
 		}
@@ -234,7 +235,7 @@ int* generateShader(GLFWwindow* window) {
 	int* result;
 	result = (int*)malloc(sizeof(unsigned int) * 2);
 	if (result) {
-		result[0] = shaderProgram;
+		result[0] = (int)shaderProgram;
 		result[1] = vao;
 	}
 	return result;
