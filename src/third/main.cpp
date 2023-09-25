@@ -109,10 +109,14 @@ int* generateShaderVBO(GLFWwindow* window) {
 		#version 330 core
 		//定义传入的第一个值为vec3类型的aPos字段
 		layout (location = 0) in vec3 aPos;
+		layout (location = 1) in vec3 aColor;
+
+		out vec3 outColor;
 		void main()
 		{
 			//传出gl_Position位置
 			gl_Position = vec4(aPos.x,aPos.y,aPos.z,1.0);
+			outColor = aColor;
 		}
 	)";
 
@@ -143,14 +147,18 @@ int* generateShaderVBO(GLFWwindow* window) {
 		#version 330 core
 		out vec4 FragColor;
 		//定义全局unifom字段 inColor
-		uniform vec4 inColor; 
+		//uniform vec4 inColor;
+
+		in vec3 outColor;
 		void main(){
-			if(inColor.x > 0 || inColor.y > 0 || inColor.z > 0 || inColor.w > 0){
+			/*if(inColor.x > 0 || inColor.y > 0 || inColor.z > 0 || inColor.w > 0){
 				FragColor = inColor;
 			}
 			else{
 				FragColor = vec4(1.0f,0.5f,0.2f,1.0f);
-			}	
+			}	*/
+
+			FragColor = vec4(outColor,1.0);
 		}
 	)";
 
@@ -213,9 +221,10 @@ int* generateShaderVBO(GLFWwindow* window) {
 
 	//三角顶点坐标
 	float vertices[] = {
-		-0.5f, -0.5f, 0.0f,
-		 0.5f, -0.5f, 0.0f,
-		 0.0f,  0.5f, 0.0f,
+		//顶点坐标					//颜色
+		-0.5f, -0.5f, 0.0f,			1.0f,0.0f,0.0f,
+		 0.5f, -0.5f, 0.0f,			0.0f,1.0f,0.0f,
+		 0.0f,  0.5f, 0.0f,			0.0f,0.0f,1.0f
 	};
 
 	GLuint vbo;
@@ -230,9 +239,15 @@ int* generateShaderVBO(GLFWwindow* window) {
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
 	//告诉opengl数据格式
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-	//其中顶点着色器属性
+	//设置顶点坐标属性
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+	//启用顶点着色器属性
 	glEnableVertexAttribArray(0);
+
+	//设置顶点颜色属性
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+	//启用顶点着色器属性
+	glEnableVertexAttribArray(1);
 
 	//解绑VBO
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -263,14 +278,14 @@ void renderVBO(GLFWwindow* window, int* shader) {
 
 	glUseProgram(shaderProgram);
 
-	double current = glfwGetTime();
-	float color = (sin(current) * 0.5) + 0.f;
+	//double current = glfwGetTime();
+	//float color = (sin(current) * 0.5) + 0.f;
 
 	//在shaderProgram中获取全局变量inColor
 	//必须在useProgram激活program后才能设置
-	int colorIndex = glGetUniformLocation(shaderProgram, "inColor");
+	//int colorIndex = glGetUniformLocation(shaderProgram, "inColor");
 	//设置全局uniform inColor 
-	glUniform4f(colorIndex, 0.5f, color, 1 - color, 1.0f);
+	//glUniform4f(colorIndex, 0.5f, color, 1 - color, 1.0f);
 
 	glBindVertexArray(vao);
 	glDrawArrays(GL_TRIANGLES, 0, 3);
