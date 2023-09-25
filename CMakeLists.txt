@@ -19,6 +19,10 @@ target_link_directories(${PROJECT_NAME} PUBLIC libs)
 #给${PROJECT_NAME}添加一个头文件查询目录
 target_include_directories(${PROJECT_NAME} PUBLIC includes)
 
+#给${PROJECT_NAME}查询common目录
+target_include_directories(${PROJECT_NAME} PUBLIC src/common)
+
+
 #链接一个glfw3.lib
 target_link_libraries(${PROJECT_NAME} PUBLIC glfw3)
 #链接一个opengl32.lib
