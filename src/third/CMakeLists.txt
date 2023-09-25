@@ -9,10 +9,10 @@ add_executable(${PROJECT_NAME} main.cpp ../glad.c)
 
 
 #给${PROJECT_NAME}添加一个lib查询目录
-target_link_directories(${PROJECT_NAME} PUBLIC ../../libs)
+#target_link_directories(${PROJECT_NAME} PUBLIC ../../libs)
 
 #给${PROJECT_NAME}添加一个头文件查询目录
-target_include_directories(${PROJECT_NAME} PUBLIC ../../includes)
+#target_include_directories(${PROJECT_NAME} PUBLIC ../../includes)
 
 #链接一个glfw3.lib
 target_link_libraries(${PROJECT_NAME} PUBLIC glfw3)

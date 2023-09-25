@@ -4,23 +4,31 @@ set(PROJECT_NAME "LeanOpenGL")
 
 project(${PROJECT_NAME})
 
+
+#生成一个可执行文件${PROJECT_NAME}
+add_executable(${PROJECT_NAME} src/main.cpp src/glad.c)
+
+#link全局引入linb
+link_directories(${PROJECT_NAME} PUBLIC libs)
+#添加全局查询路径 includes
+include_directories(${PROJECT_NAME} PUBLIC includes)
+#添加全局查询路径 common
+include_directories(${PROJECT_NAME} PUBLIC src/common)
+
+
 #引入second项目
 add_subdirectory(src/second)
 add_subdirectory(src/third)
 
 
-#生成一个可执行文件${PROJECT_NAME}
-add_executable(${PROJECT_NAME} src/main.cpp src/glad.c)
-
-
 #给${PROJECT_NAME}添加一个lib查询目录
-target_link_directories(${PROJECT_NAME} PUBLIC libs)
+#target_link_directories(${PROJECT_NAME} PUBLIC libs)
 
 #给${PROJECT_NAME}添加一个头文件查询目录
-target_include_directories(${PROJECT_NAME} PUBLIC includes)
+#target_include_directories(${PROJECT_NAME} PUBLIC includes)
 
 #给${PROJECT_NAME}查询common目录
-target_include_directories(${PROJECT_NAME} PUBLIC src/common)
+#target_include_directories(${PROJECT_NAME} PUBLIC src/common)
 
 
 #链接一个glfw3.lib
