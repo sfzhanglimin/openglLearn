@@ -1,11 +1,15 @@
 ﻿#pragma
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include "shaders.h"
 #include <iostream>
 
+//stb
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 /*
-https://learnopengl-cn.github.io/01%20Getting%20started/05%20Shaders/
+* https://learnopengl-cn.github.io/01%20Getting%20started/06%20Textures/
 */
 
 

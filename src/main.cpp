@@ -3,21 +3,25 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 
+/// <summary>
+/// https://learnopengl-cn.github.io/01%20Getting%20started/03%20Hello%20Window/
+/// </summary>
+
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 void render(GLFWwindow* window);
 
 int main(){
 
-    //=========ÉèÖÃ»·¾³=============
+    //=========è®¾ç½®ç¯å¢ƒ=============
 
-    //³õÊ¼»¯
+    //åˆå§‹åŒ–
     glfwInit();
-    //ÉèÖÃopengl°æ±¾
+    //è®¾ç½®openglç‰ˆæœ¬
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 
-    //Ã÷È·¸æËßGLFWÎÒÃÇÊ¹ÓÃµÄÊÇºËĞÄÄ£Ê½(Core-profile)
+    //æ˜ç¡®å‘Šè¯‰GLFWæˆ‘ä»¬ä½¿ç”¨çš„æ˜¯æ ¸å¿ƒæ¨¡å¼(Core-profile)
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     //for mac
     //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
@@ -25,8 +29,8 @@ int main(){
 
 
 
-    //===================´°¿Ú²Ù×÷
-    //´´½¨Ò»¸öglfw window
+    //===================çª—å£æ“ä½œ
+    //åˆ›å»ºä¸€ä¸ªglfw window
     GLFWwindow* window = glfwCreateWindow(800, 600, "LearnOpenGL", NULL, NULL);
     if (window == NULL)
     {
@@ -34,15 +38,15 @@ int main(){
         glfwTerminate();
         return -1;
     }
-    //Í¨ÖªGLFW½«ÎÒÃÇ´°¿ÚµÄÉÏÏÂÎÄÉèÖÃÎªµ±Ç°Ïß³ÌµÄÖ÷ÉÏÏÂÎÄ
+    //é€šçŸ¥GLFWå°†æˆ‘ä»¬çª—å£çš„ä¸Šä¸‹æ–‡è®¾ç½®ä¸ºå½“å‰çº¿ç¨‹çš„ä¸»ä¸Šä¸‹æ–‡
     glfwMakeContextCurrent(window);
 
 
     //===========glad=============
     
-    //GLADÊÇÓÃÀ´¹ÜÀíOpenGLµÄº¯ÊıÖ¸ÕëµÄ
+    //GLADæ˜¯ç”¨æ¥ç®¡ç†OpenGLçš„å‡½æ•°æŒ‡é’ˆçš„
     // 
-    //³õÊ¼»¯GLAD
+    //åˆå§‹åŒ–GLAD
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
         std::cout << "Failed to initialize GLAD" << std::endl;
@@ -50,57 +54,57 @@ int main(){
     }
 
 
-    //======================ÊÓ¿Ú========================
-    //OpenGLäÖÈ¾´°¿ÚµÄ³ß´ç´óĞ¡
+    //======================è§†å£========================
+    //OpenGLæ¸²æŸ“çª—å£çš„å°ºå¯¸å¤§å°
     glViewport(0, 0, 800, 600);
 
-    //×¢²á´°¿Ú±ä»¯»Øµ÷
+    //æ³¨å†Œçª—å£å˜åŒ–å›è°ƒ
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
 
-    //Ñ­»·
-    //¼ì²éGLFWÊÇ·ñ±»ÒªÇóÍË³ö
+    //å¾ªç¯
+    //æ£€æŸ¥GLFWæ˜¯å¦è¢«è¦æ±‚é€€å‡º
     while (!glfwWindowShouldClose(window))
     {
-        /*¼àÌı°´¼üÖ¸Áî*/
+        /*ç›‘å¬æŒ‰é”®æŒ‡ä»¤*/
         processInput(window);
 
-        /*äÖÈ¾*/
+        /*æ¸²æŸ“*/
         render(window);
 
         /*
-        º¯Êı»á½»»»ÑÕÉ«»º³å£¨ËüÊÇÒ»¸ö´¢´æ×ÅGLFW´°¿ÚÃ¿Ò»¸öÏñËØÑÕÉ«ÖµµÄ´ó»º³å£©£¬ËüÔÚÕâÒ»µü´úÖĞ±»ÓÃÀ´»æÖÆ£¬²¢ÇÒ½«»á×÷ÎªÊä³öÏÔÊ¾ÔÚÆÁÄ»ÉÏ¡£
+        å‡½æ•°ä¼šäº¤æ¢é¢œè‰²ç¼“å†²ï¼ˆå®ƒæ˜¯ä¸€ä¸ªå‚¨å­˜ç€GLFWçª—å£æ¯ä¸€ä¸ªåƒç´ é¢œè‰²å€¼çš„å¤§ç¼“å†²ï¼‰ï¼Œå®ƒåœ¨è¿™ä¸€è¿­ä»£ä¸­è¢«ç”¨æ¥ç»˜åˆ¶ï¼Œå¹¶ä¸”å°†ä¼šä½œä¸ºè¾“å‡ºæ˜¾ç¤ºåœ¨å±å¹•ä¸Šã€‚
         */
         glfwSwapBuffers(window);
 
-        //º¯Êı¼ì²éÓĞÃ»ÓĞ´¥·¢Ê²Ã´ÊÂ¼ş£¨±ÈÈç¼üÅÌÊäÈë¡¢Êó±êÒÆ¶¯µÈ£©¡¢¸üĞÂ´°¿Ú×´Ì¬£¬
+        //å‡½æ•°æ£€æŸ¥æœ‰æ²¡æœ‰è§¦å‘ä»€ä¹ˆäº‹ä»¶ï¼ˆæ¯”å¦‚é”®ç›˜è¾“å…¥ã€é¼ æ ‡ç§»åŠ¨ç­‰ï¼‰ã€æ›´æ–°çª—å£çŠ¶æ€ï¼Œ
         glfwPollEvents();
     }
 
-    //ÊÍ·Å/É¾³ıÖ®Ç°µÄ·ÖÅäµÄËùÓĞ×ÊÔ´
+    //é‡Šæ”¾/åˆ é™¤ä¹‹å‰çš„åˆ†é…çš„æ‰€æœ‰èµ„æº
     glfwTerminate();
 
 
     return 0;
 }
 
-//´°¿Ú±ä»¯»Øµ÷,´´ĞÂÉèÖÃ´°¿Ú´óĞ¡
+//çª—å£å˜åŒ–å›è°ƒ,åˆ›æ–°è®¾ç½®çª—å£å¤§å°
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
 }
 
-//°´¼ü¼àÌı²Ù×÷
+//æŒ‰é”®ç›‘å¬æ“ä½œ
 void processInput(GLFWwindow* window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 }
 
-// äÖÈ¾Ö¸Áî
+// æ¸²æŸ“æŒ‡ä»¤
 void render(GLFWwindow* window) {
-    //Çå¿ÕÆÁÄ»ËùÓÃµÄÑÕÉ«,ÉèÖÃÄ¬ÈÏÑÕÉ«
+    //æ¸…ç©ºå±å¹•æ‰€ç”¨çš„é¢œè‰²,è®¾ç½®é»˜è®¤é¢œè‰²
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     
-    //Çå³ıÑÕÉ«»º³å
+    //æ¸…é™¤é¢œè‰²ç¼“å†²
     glClear(GL_COLOR_BUFFER_BIT);
 }

@@ -19,6 +19,7 @@ include_directories(${PROJECT_NAME} PUBLIC src/common)
 #引入second项目
 add_subdirectory(src/second)
 add_subdirectory(src/third)
+add_subdirectory(src/fourth)
 
 
 #给${PROJECT_NAME}添加一个lib查询目录

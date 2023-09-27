@@ -3,11 +3,17 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 
+
+/*
+https://learnopengl-cn.github.io/01%20Getting%20started/04%20Hello%20Triangle/
+*/
+
+
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
-void renderVBO(GLFWwindow* window, int* shader);
+void renderTexture2D(GLFWwindow* window, int* shader);
 void renderEBO(GLFWwindow* window, int* shader);
-int* generateShaderVBO(GLFWwindow* window);
+int* generateTexture2DShader(GLFWwindow* window);
 int* generateShaderEBO(GLFWwindow* window);
 
 int main() {
@@ -108,7 +114,7 @@ void processInput(GLFWwindow* window) {
 }
 
 
-int* generateShaderVBO(GLFWwindow* window) {
+int* generateTexture2DShader(GLFWwindow* window) {
 	//顶点着色器转换内容,
 	//将传入的第一个数据申明为一个vec3类型的aPos变量
 	//将apos变量转换为opengl需要的坐标vec4
@@ -412,7 +418,7 @@ int* generateShaderEBO(GLFWwindow* window) {
 
 
 // 渲染指令VBO
-void renderVBO(GLFWwindow* window, int* shader) {
+void renderTexture2D(GLFWwindow* window, int* shader) {
 	//清空屏幕所用的颜色,设置默认颜色
 	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 	//清除颜色缓冲
