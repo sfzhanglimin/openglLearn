@@ -16,7 +16,7 @@
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 void renderTexture2D(GLFWwindow* window, int* shader);
-int* generateTexture2DShader(GLFWwindow* window);
+Shader generateTexture2DShader(GLFWwindow* window);
 
 int main() {
 
@@ -110,193 +110,113 @@ void processInput(GLFWwindow* window) {
 		glfwSetWindowShouldClose(window, true);
 }
 
+//生成->绑定->数据
+Shader generateTexture2DShader(GLFWwindow* window) {
+	int width, height, nrChannels;
+	//加载图片资源.获取到宽,高,颜色,通道
+	unsigned char* data = stbi_load("./container.jpg", &width, &height, &nrChannels, 0);
 
-int* generateTexture2DShader(GLFWwindow* window) {
-	//顶点着色器转换内容,
-	//将传入的第一个数据申明为一个vec3类型的aPos变量
-	//将apos变量转换为opengl需要的坐标vec4
-	const char* vertexShaderSource = R"(
-		#version 330 core
-		//定义传入的第一个值为vec3类型的aPos字段
-		layout (location = 0) in vec3 aPos;
-		layout (location = 1) in vec3 aColor;
-
-		out vec3 outColor;
-		void main()
-		{
-			//传出gl_Position位置
-			gl_Position = vec4(aPos.x,aPos.y,aPos.z,1.0);
-			outColor = aColor;
-		}
-	)";
-
-	//创建一个着色器对象并将返回的ID设置为vertexShader
-	unsigned int vertexShader;
-	vertexShader = glCreateShader(GL_VERTEX_SHADER);
-
-	//着色器源码附加到gl中
-	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-	//编译源码
-	glCompileShader(vertexShader);
-
-	int success;
-	//查看编译结果
-	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-
-	if (!success) {
-		char log[512];
-		//获取编译信息
-		glGetShaderInfoLog(vertexShader, 512, NULL, log);
-
-
-		std::cout << "编译顶点着色器错误:\n" << log << std::endl;
+	if (!data) {
+		std::cout << "加载图片资源错误" << std::endl;
+		return;
 	}
 
+	Shader textureShader("texture_v.glsl", "./texture_f.glsl");
 
-	const char* frameShaderSource = R"(
-		#version 330 core
-		out vec4 FragColor;
-		//定义全局unifom字段 inColor
-		//uniform vec4 inColor;
+	unsigned int texture;
+	//创建texture
+	glGenTextures(1, &texture);
 
-		in vec3 outColor;
-		void main(){
-			/*if(inColor.x > 0 || inColor.y > 0 || inColor.z > 0 || inColor.w > 0){
-				FragColor = inColor;
-			}
-			else{
-				FragColor = vec4(1.0f,0.5f,0.2f,1.0f);
-			}	*/
-
-			FragColor = vec4(outColor,1.0);
-		}
-	)";
-
-	unsigned int fragmentShader;
-	//创建片段着色器器
-	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 	//绑定
-	glShaderSource(fragmentShader, 1, &frameShaderSource, NULL);
+	glBindTexture(GL_TEXTURE_2D, texture);
 
-	//编译
-	glCompileShader(fragmentShader);
+	//设置X轴环绕方式为重复
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	//设置Y轴环绕方式为重复
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-	//获取是否成功
-	glGetShaderiv(fragmentShader, GL_FRAGMENT_SHADER, &success);
-	if (!success) {
-		char logs[512];
-		glGetShaderInfoLog(fragmentShader, 512, NULL, logs);
-		std::cout << "片段着色器编译失败:\n" << logs << std::endl;
-	}
+	//设置mip 缩小方式为线性
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
+	//设置mip 放大方式为线性
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	//将上面两个着色器合并成一个着色器程序
-	//创建一个program
-	unsigned int shaderProgram;
-	shaderProgram = glCreateProgram();
-	//附加顶点着色器
-	glAttachShader(shaderProgram, vertexShader);
-	//附加片段着色器
-	glAttachShader(shaderProgram, fragmentShader);
-	//将上面shader链接起来(应该是链接成管线)
-	glLinkProgram(shaderProgram);
+	//数据传输
+	/*
+	* 1.第一个参数指定了纹理目标(Target)。设置为GL_TEXTURE_2D意味着会生成与当前绑定
+	* 的纹理对象在同一个目标上的纹理（任何绑定到GL_TEXTURE_1D和GL_TEXTURE_3D的纹理不会受到影响）
+	*
+	* 2.第二个参数为纹理指定多级渐远纹理的级别，
+	* 如果你希望单独手动设置每个多级渐远纹理的级别的话。这里我们填0，也就是基本级别。
+	*
+	* 3.第三个参数告诉OpenGL我们希望把纹理储存为何种格式。
+	* 我们的图像只有RGB值，因此我们也把纹理储存为RGB值。
+	*
+	* 4,5.第四个和第五个参数设置最终的纹理的宽度和高度
+	*
+	* 6.第六个参数应该总是被设为0（历史遗留的问题）
+	*
+	* 7,8.第七第八个参数定义了源图的格式和数据类型。我们使用RGB值加载这个图像，
+	* 并把它们储存为char(byte)数组，我们将会传入对应值。
+	*
+	* 9.最后一个参数是真正的图像数据。
+	*/
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
 
+	//生成mipmap
+	glGenerateMipmap(GL_TEXTURE_2D);
 
-	//检查,用GL_LINK_STATUS  glGetProgramInfoLog
-	glGetShaderiv(shaderProgram, GL_LINK_STATUS, &success);
-	if (!success) {
-		char logs[512];
-		glGetProgramInfoLog(shaderProgram, 512, NULL, logs);
-		std::cout << "program链接错误:\n" << logs << std::endl;
-	}
-
-	//激活program
-	//glUseProgram(shaderProgram);
-
-	//删除着色器对象.不需要了.已经传入了.
-	glDeleteShader(vertexShader);
-	glDeleteShader(fragmentShader);
-
-
+	//释放
+	stbi_image_free(data);
 
 
-
-
-	unsigned int vao;
-	//创建一个顶点缓冲数组-->VAO
-	glGenVertexArrays(1, &vao);
-
-	//绑定vao
-	glBindVertexArray(vao);
-
-	//三角顶点坐标
 	float vertices[] = {
-		//顶点坐标					//颜色
-		-0.5f, -0.5f, 0.0f,			1.0f,0.0f,0.0f,
-		 0.5f, -0.5f, 0.0f,			0.0f,1.0f,0.0f,
-		 0.0f,  0.5f, 0.0f,			0.0f,0.0f,1.0f
+		//位置						//颜色					//纹理
+		0.5,0.5,0.0                 ,1.0,0.0,0.0,			1.0,1.0,			//右上
+		0.5,-0.5,0.0				,0.0,0.5,0.0,			1.0,0.0,			//右下
+		-0.5,-0.5,0.0				,1.0,1.0,0.0,			0.0,0.0,			//左下
+		-0.5,0.5,0.0				,1.0,1.0,1.0,			0.0,1.0				//左上
 	};
 
-	GLuint vbo;
-	//创建一个顶点缓冲对象-->VBO
-	glGenBuffers(1, &vbo);
+	int verticesIndex[] = {
+		0,2,3,
+		1,2,3
+	};
 
-	//绑定vbo到opengl,
+	unsigned int vao, vbo, ebo;
+	glGenVertexArrays(1, &vao);
+
+	glGenBuffers(1, &vbo);
+	glGenBuffers(1, &ebo);
+
+	glBindVertexArray(vao);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
-	//将顶点数据传输到opengl绑定的GL_ARRAY_BUFFER缓存对象中.(vbo)
-	//GL_STATIC_DRAW 数据不经常变
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-	//告诉opengl数据格式
-	//设置顶点坐标属性
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-	//启用顶点着色器属性
-	glEnableVertexAttribArray(0);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(verticesIndex), verticesIndex, GL_STATIC_DRAW);
 
-	//设置顶点颜色属性
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-	//启用顶点着色器属性
-	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)3);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)6);
 
-	//解绑VBO
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	//解绑VAO
-	glBindVertexArray(0);
-
-	int* result;
-	result = (int*)malloc(sizeof(unsigned int) * 2);
-	if (result) {
-		result[0] = (int)shaderProgram;
-		result[1] = vao;
-	}
-	return result;
+	return textureShader;
 }
 
 
 
 // 渲染指令VBO
-void renderTexture2D(GLFWwindow* window, int* shader) {
+void renderTexture2D(GLFWwindow* window, Shader shader) {
 	//清空屏幕所用的颜色,设置默认颜色
 	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 	//清除颜色缓冲
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	int shaderProgram = shader[0];
-	int vao = shader[1];
+	shader.use();
 
-	glUseProgram(shaderProgram);
-
-	//double current = glfwGetTime();
-	//float color = (sin(current) * 0.5) + 0.f;
-
-	//在shaderProgram中获取全局变量inColor
-	//必须在useProgram激活program后才能设置
-	//int colorIndex = glGetUniformLocation(shaderProgram, "inColor");
-	//设置全局uniform inColor 
-	//glUniform4f(colorIndex, 0.5f, color, 1 - color, 1.0f);
-
-	glBindVertexArray(vao);
-	glDrawArrays(GL_TRIANGLES, 0, 3);
+	//glDrawElements(GL_TRIANGLES, 0, 3);
 }

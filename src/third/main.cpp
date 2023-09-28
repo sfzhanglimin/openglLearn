@@ -3,16 +3,10 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 
-
-/*
-https://learnopengl-cn.github.io/01%20Getting%20started/05%20Shaders/
-*/
-
-
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
-void renderTexture2D(GLFWwindow* window, int* shader);
-int* generateTexture2DShader(GLFWwindow* window);
+void renderVBO(GLFWwindow* window, int* shader);
+int* generateShaderVBO(GLFWwindow* window);
 
 int main() {
 
@@ -65,7 +59,7 @@ int main() {
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
 	//vbo
-	int* shaders = generateTexture2DShader(window);
+	int* shaders = generateShaderVBO(window);
 
 
 	//循环
@@ -76,7 +70,7 @@ int main() {
 		processInput(window);
 
 		/*渲染*/
-		renderTexture2D(window, shaders);
+		renderVBO(window, shaders);
 
 		/*
 		函数会交换颜色缓冲（它是一个储存着GLFW窗口每一个像素颜色值的大缓冲），它在这一迭代中被用来绘制，并且将会作为输出显示在屏幕上。
@@ -107,7 +101,7 @@ void processInput(GLFWwindow* window) {
 }
 
 
-int* generateTexture2DShader(GLFWwindow* window) {
+int* generateShaderVBO(GLFWwindow* window) {
 	//顶点着色器转换内容,
 	//将传入的第一个数据申明为一个vec3类型的aPos变量
 	//将apos变量转换为opengl需要的坐标vec4
@@ -273,7 +267,7 @@ int* generateTexture2DShader(GLFWwindow* window) {
 
 
 // 渲染指令VBO
-void renderTexture2D(GLFWwindow* window, int* shader) {
+void renderVBO(GLFWwindow* window, int* shader) {
 	//清空屏幕所用的颜色,设置默认颜色
 	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 	//清除颜色缓冲
