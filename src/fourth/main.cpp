@@ -15,8 +15,7 @@
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
-void renderTexture2D(GLFWwindow* window, int* shader);
-Shader generateTexture2DShader(GLFWwindow* window);
+void renderTexture2D(GLFWwindow* window, Shader shader,unsigned int vao);
 
 int main() {
 
@@ -68,60 +67,66 @@ int main() {
 	//注册窗口变化回调
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-	//vbo
-	int* shaders = generateTexture2DShader(window);
 
 
-	//循环
-	//检查GLFW是否被要求退出
-	while (!glfwWindowShouldClose(window))
-	{
-		/*监听按键指令*/
-		processInput(window);
-
-		/*渲染*/
-		renderTexture2D(window, shaders);
-
-		/*
-		函数会交换颜色缓冲（它是一个储存着GLFW窗口每一个像素颜色值的大缓冲），它在这一迭代中被用来绘制，并且将会作为输出显示在屏幕上。
-		*/
-		glfwSwapBuffers(window);
-
-		//函数检查有没有触发什么事件（比如键盘输入、鼠标移动等）、更新窗口状态，
-		glfwPollEvents();
-	}
-
-	//释放/删除之前的分配的所有资源
-	glfwTerminate();
 
 
-	return 0;
-}
 
-//窗口变化回调,创新设置窗口大小
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
-{
-	glViewport(0, 0, width, height);
-}
 
-//按键监听操作
-void processInput(GLFWwindow* window) {
-	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-		glfwSetWindowShouldClose(window, true);
-}
-
-//生成->绑定->数据
-Shader generateTexture2DShader(GLFWwindow* window) {
 	int width, height, nrChannels;
 	//加载图片资源.获取到宽,高,颜色,通道
-	unsigned char* data = stbi_load("./container.jpg", &width, &height, &nrChannels, 0);
+
+	unsigned char* data = stbi_load("D:/work/other/openglLearn/src/fourth/container.jpg",
+						&width, &height, &nrChannels, 0);
 
 	if (!data) {
 		std::cout << "加载图片资源错误" << std::endl;
-		return;
+		return 1;
 	}
 
-	Shader textureShader("texture_v.glsl", "./texture_f.glsl");
+	Shader textureShader(
+		"D:/work/other/openglLearn/src/fourth/texture_v.glsl",
+		"D:/work/other/openglLearn/src/fourth/texture_f.glsl");
+
+	float vertices[] = {
+		//位置						//颜色					//纹理
+		0.5,0.5,0.0                 ,1.0,0.0,0.0,			1.0,1.0,			//右上
+		0.5,-0.5,0.0				,0.0,0.5,0.0,			1.0,0.0,			//右下
+		-0.5,-0.5,0.0				,1.0,1.0,0.0,			0.0,0.0,			//左下
+		-0.5,0.5,0.0				,1.0,1.0,1.0,			0.0,1.0				//左上
+	};
+
+	int verticesIndex[] = {
+		0,1,3,
+		1,2,3
+	};
+
+	unsigned int vao, vbo, ebo;
+	glGenVertexArrays(1, &vao);
+
+	glGenBuffers(1, &vbo);
+	glGenBuffers(1, &ebo);
+
+	glBindVertexArray(vao);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(verticesIndex), verticesIndex, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)3);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)6);
+
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+	glEnableVertexAttribArray(2);
+
+
+
 
 	unsigned int texture;
 	//创建texture
@@ -170,53 +175,57 @@ Shader generateTexture2DShader(GLFWwindow* window) {
 	stbi_image_free(data);
 
 
-	float vertices[] = {
-		//位置						//颜色					//纹理
-		0.5,0.5,0.0                 ,1.0,0.0,0.0,			1.0,1.0,			//右上
-		0.5,-0.5,0.0				,0.0,0.5,0.0,			1.0,0.0,			//右下
-		-0.5,-0.5,0.0				,1.0,1.0,0.0,			0.0,0.0,			//左下
-		-0.5,0.5,0.0				,1.0,1.0,1.0,			0.0,1.0				//左上
-	};
-
-	int verticesIndex[] = {
-		0,2,3,
-		1,2,3
-	};
-
-	unsigned int vao, vbo, ebo;
-	glGenVertexArrays(1, &vao);
-
-	glGenBuffers(1, &vbo);
-	glGenBuffers(1, &ebo);
-
-	glBindVertexArray(vao);
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(verticesIndex), verticesIndex, GL_STATIC_DRAW);
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)3);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)6);
+	
 
 
-	return textureShader;
+	//循环
+	//检查GLFW是否被要求退出
+	while (!glfwWindowShouldClose(window))
+	{
+		/*监听按键指令*/
+		processInput(window);
+
+		/*渲染*/
+		renderTexture2D(window, textureShader, vao);
+
+		/*
+		函数会交换颜色缓冲（它是一个储存着GLFW窗口每一个像素颜色值的大缓冲），它在这一迭代中被用来绘制，并且将会作为输出显示在屏幕上。
+		*/
+		glfwSwapBuffers(window);
+
+		//函数检查有没有触发什么事件（比如键盘输入、鼠标移动等）、更新窗口状态，
+		glfwPollEvents();
+	}
+
+	//释放/删除之前的分配的所有资源
+	glfwTerminate();
+
+
+	return 0;
+}
+
+//窗口变化回调,创新设置窗口大小
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+	glViewport(0, 0, width, height);
+}
+
+//按键监听操作
+void processInput(GLFWwindow* window) {
+	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+		glfwSetWindowShouldClose(window, true);
 }
 
 
-
 // 渲染指令VBO
-void renderTexture2D(GLFWwindow* window, Shader shader) {
+void renderTexture2D(GLFWwindow* window, Shader shader, unsigned int vao) {
 	//清空屏幕所用的颜色,设置默认颜色
 	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 	//清除颜色缓冲
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	shader.use();
+	glBindVertexArray(vao);
 
-	//glDrawElements(GL_TRIANGLES, 0, 3);
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }
