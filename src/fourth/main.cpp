@@ -16,7 +16,7 @@
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
-void renderTexture2D(GLFWwindow* window, Shader shader,unsigned int vao);
+void renderTexture2D(GLFWwindow* window, Shader shader, unsigned int vao);
 
 int main() {
 
@@ -34,7 +34,7 @@ int main() {
 	//glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
 
-	
+
 
 	//===================窗口操作
 	//创建一个glfw window
@@ -70,13 +70,13 @@ int main() {
 
 
 	auto workPath = std::filesystem::current_path().string();
-	
+
 
 	int width, height, nrChannels;
 	//加载图片资源.获取到宽,高,颜色,通道
 
 	unsigned char* data = stbi_load((workPath + "/../../../src/fourth/container.jpg").c_str(),
-						&width, &height, &nrChannels, 0);
+		&width, &height, &nrChannels, 0);
 
 	if (!data) {
 		std::cout << "加载图片资源错误" << std::endl;
@@ -84,7 +84,7 @@ int main() {
 	}
 
 	Shader textureShader(
-		(workPath +"/../../../src/fourth/texture_v.glsl").c_str(),
+		(workPath + "/../../../src/fourth/texture_v.glsl").c_str(),
 		(workPath + "/../../../src/fourth/texture_f.glsl").c_str());
 
 	float vertices[] = {
@@ -115,10 +115,11 @@ int main() {
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(verticesIndex), verticesIndex, GL_STATIC_DRAW);
-
+	
+	//解释每个数据的读取方式.
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)3);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)6);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
 
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
@@ -174,7 +175,7 @@ int main() {
 	stbi_image_free(data);
 
 
-	
+
 
 
 	//循环
