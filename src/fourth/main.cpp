@@ -3,6 +3,7 @@
 #include <GLFW/glfw3.h>
 #include "shaders.h"
 #include <iostream>
+#include <filesystem>
 
 //stb
 #define STB_IMAGE_IMPLEMENTATION
@@ -33,7 +34,7 @@ int main() {
 	//glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
 
-
+	
 
 	//===================窗口操作
 	//创建一个glfw window
@@ -68,15 +69,13 @@ int main() {
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
 
-
-
-
-
+	auto workPath = std::filesystem::current_path().string();
+	
 
 	int width, height, nrChannels;
 	//加载图片资源.获取到宽,高,颜色,通道
 
-	unsigned char* data = stbi_load("D:/work/other/openglLearn/src/fourth/container.jpg",
+	unsigned char* data = stbi_load((workPath + "/../../../src/fourth/container.jpg").c_str(),
 						&width, &height, &nrChannels, 0);
 
 	if (!data) {
@@ -85,8 +84,8 @@ int main() {
 	}
 
 	Shader textureShader(
-		"D:/work/other/openglLearn/src/fourth/texture_v.glsl",
-		"D:/work/other/openglLearn/src/fourth/texture_f.glsl");
+		(workPath +"/../../../src/fourth/texture_v.glsl").c_str(),
+		(workPath + "/../../../src/fourth/texture_f.glsl").c_str());
 
 	float vertices[] = {
 		//位置						//颜色					//纹理

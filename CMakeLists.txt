@@ -2,6 +2,11 @@ cmake_minimum_required(VERSION 3.4...3.20 FATAL_ERROR)
 
 set(PROJECT_NAME "LeanOpenGL")
 
+#设置c++17支持(为了使用filesystem)
+set(CMAKE_CXX_STANDARD 17)
+#设定位c++17为必须的
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 project(${PROJECT_NAME})
 
 
